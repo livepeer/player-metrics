@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang=en>
+  <head>
+    <title>Generic video playback quality metrics</title>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+
+    <script src="reportGenericVideoMetrics.js"></script>
+
+  </head>
+  <body>
+    <script>
+      function createReportingUrl(video) {
+        //for this example's sake, re-construct the info ws url so there's somewhere to report to
+        let url = "wss://localhost/mist/";
+        let filename = video.currentSrc.split("/");
+        filename = filename[filename.length-1];
+        url += "json_"+filename.split(".")[0]+".js";
+        return url;
+      }
+
+      //this way, we won't gather future additions to the DOM tree
+      setTimeout(function(){
+
+        //gather all html5 video and audio 
+        let vs = document.querySelectorAll("video,audio");
+        for (let i = 0; i < vs.length; i++) {
+          reportGenericVideoMetrics(vs[i],createReportingUrl(vs[i]));
+        }
+
+        //also supports reporting to multiple websockets
+        if (!reportGenericVideoMetrics(vs[0],"wss://localhost/mist/json_live.js")) { 
+          console.warn("Failed to attach to another reporting server");
+        }
+
+        //but won't attach twice
+        if (!reportGenericVideoMetrics(vs[0],"wss://localhost/mist/json_live.js")) {
+          console.warn("Failed to attach to the same reporting server");
+        }
+
+      },1e3);
+
+      //alternatively we could let the video elements come to us...
+      //..but we won't find elements that fail to load
+      document.body.addEventListener("loadstart",function(e){
+        reportGenericVideoMetrics(e.target,createReportingUrl(e.target));
+      },true);
+
+    </script>
+
+
+    <video crossorigin="anonymous" playsinline="" autoplay controls>
+      <source src="//localhost/mist/bunny.webm" type="video/webm">
+    </video>
+    <br>
+
+    <div class="mistvideo" id="videogen_YUWC0zq3umpN">
+      <noscript>
+        <a href="http://cattop/mist/videogen.html" target="_blank">
+          Click here to play this video
+        </a>
+      </noscript>
+      <script>
+        var a = function(){
+          mistPlay("videogen",{
+            target: document.getElementById("videogen_YUWC0zq3umpN")
+          });
+        };
+        if (!window.mistplayers) {
+          var p = document.createElement("script");
+          p.src = "https://cattop/mist/player.js"
+          document.head.appendChild(p);
+          p.onload = a;
+        }
+        else { a(); }
+      </script>
+    </div>
+
+    <video crossorigin="anonymous" playsinline="" autoplay controls>
+      <source src="//localhost/mist/videogen.mp4" type="video/mp4">
+    </video>
+    <br>
+
+    <!-- we should be able to gather metrics for audio elements too! -->
+    <audio crossorigin="anonymous" playsinline="" autoplay controls>
+      <source src="//localhost/mist/beatsaber.aac" type="audio/aac">
+    </audio>
+  </body>
+</html>
