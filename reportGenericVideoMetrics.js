@@ -72,7 +72,8 @@ function reportGenericVideoMetrics(video,reportingWebsocketUrl) {
       playerWidth: null,
       player: "generic",
       pageUrl: location.href,
-      sourceUrl: video.currentSrc
+      sourceUrl: video.currentSrc,
+      duration: null
     },
     last: { //this contains the metrics storage object that was sent last
       firstPlayback: null,
@@ -88,7 +89,7 @@ function reportGenericVideoMetrics(video,reportingWebsocketUrl) {
       videoHeight: null,
       videoWidth: null,
       playerHeight: null,
-      playerWidth: null,
+      playerWidth: null
     }
   };
 
@@ -190,7 +191,8 @@ function reportGenericVideoMetrics(video,reportingWebsocketUrl) {
       return result;
     },
   };
-
+  
+  if (!video.paused) { monitor.init(); }
   //enable
   var events = ["loadstart","play","playing"];
   for (var i in events) {
@@ -263,6 +265,12 @@ function reportGenericVideoMetrics(video,reportingWebsocketUrl) {
         return video ? video.clientWidth : null;
       }
     });
+    Object.defineProperty(d,"duration",{
+      get: function(){
+        return video ? video.duration : null;
+      }
+    });
+
 
     video.addEventListener("waiting",function(){
       timeWaiting = d.timeWaiting; //in case we get waiting several times in a row
@@ -319,4 +327,3 @@ function reportGenericVideoMetrics(video,reportingWebsocketUrl) {
   return true;
 }
 reportGenericVideoMetrics_bootMs = new Date().getTime(); //used for firstPlayback value
-
